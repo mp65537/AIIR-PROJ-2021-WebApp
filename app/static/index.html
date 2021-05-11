@@ -8,21 +8,19 @@
     <title>Compiler</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    
-
 </head>
 <body>
     <div class="row">
         <div class="col s4"></div>
-        <form class="col s4" action="">
+        <form class="col s4" action="/compile" method="post">
             <div class="input-field">
-                <input class="check1" name="link" type="text" placeholder="Github link">
+                <input id="link" name="link" type="text" placeholder="Github link" oninput="handleForm()">
             </div>
             <div class="input-field plik">       
-                <input name="zipfile"  class="zipfile check2" type="file">
-                <label for="zipfile">*.zip</label>
+                <input id="zip" name="zip" class="zipfile" type="file" oninput="handleForm()">
+                <label for="zip">*.zip</label>
             </div>
-            <input type="submit" class="btn waves-effect waves-light" value="Compile">
+            <input disabled="true" type="submit" id="compileButton" class="btn waves-effect waves-light" value="Compile">
         </form>
         <div class="col s4"></div>
     </div>
