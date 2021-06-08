@@ -6,6 +6,8 @@ services:
             - ./app:/app
             - ./uploads:/uploads
         ports: ["80:80"]
+        environment: 
+            - API=http://localhost:8080
 
 networks:
     default:
