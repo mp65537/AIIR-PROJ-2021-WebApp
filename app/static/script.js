@@ -55,6 +55,7 @@ async function submitForm(endpoint) {
         body : data,
     }).then( response => response.json())
     .then(data => {
+        downloadButton.disabled = false;
         downloadId = data.id;
         expires = data.expires;
         console.log(data.logs);
