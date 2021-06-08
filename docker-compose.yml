@@ -4,4 +4,10 @@ services:
         build: .
         volumes:
             - ./app:/app
-        ports: ["8080:80"]
+            - ./uploads:/uploads
+        ports: ["80:80"]
+
+networks:
+    default:
+        external:
+            name: aiir_network
