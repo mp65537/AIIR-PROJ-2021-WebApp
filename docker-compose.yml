@@ -6,7 +6,8 @@ services:
             - ./app:/app
             - ./uploads:/uploads
         ports: ["80:80"]
-
+        environment: 
+            - API=http://py:8080/api
 networks:
     default:
         external:

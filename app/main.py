@@ -1,18 +1,29 @@
-import os, git, tempfile, time, requests, msgpack
+import os, git, tempfile, json, string, random, time, requests, msgpack
 
-from flask import flash, Flask, send_file, request
+from flask import flash, Flask, send_file, request, render_template
 from forms import CompileForm
 from werkzeug.utils import redirect, secure_filename
 
 app = Flask(__name__, static_url_path='')
+app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['SECRET_KEY'] = 'you-will-never-guess'
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
+artifacts = {}
+api = os.environ['API']
+
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
+
 
 @app.route("/")
 def main():
-    return app.send_static_file('index.html')
+    comp = '/compile'
+    down = '/download'
+    return render_template('index.html', compile=comp, download=down)
 
 @app.route('/compile', methods=['POST'])
-def downlaod():
+def compile():
     form = CompileForm()
 
     codefile = tempfile.NamedTemporaryFile(suffix='.zip').name
@@ -39,18 +50,47 @@ def downlaod():
         else:
             file.save(codefilepath)
 
-    # compile
+    compile
     with open(codefilepath, 'rb') as to_compile:
         data = msgpack.packb({'zip': to_compile.read()})
         response = requests.post(
-            'http://py:8080/api', 
+            api, 
             data=data,
             headers={'Content-Type': 'application/octet-stream'}
         )
         response_data = msgpack.unpackb(response.content)
+        
+        if response_data['success'] == True:
+            id = id_generator()
+            path = '/uploads/' + id + '.zip'
 
-        # placeholder - sobie czy cokolwiek wgle doszlo
-        return str(response_data)
+            artifact = response_data['artifact']
+            artifact.save(path)
+
+            global artifacts
+            artifacts[id] = path
+
+            return json.dumps({
+                'success': True,
+                'logs' : response_data['logs'],
+                'expires': 5000,
+                'id': id
+            })
+
+        else:
+            return json.dumps({
+                'success': False,
+                'logs' : response_data['logs']
+            })
+      
+
+@app.route('/download', methods=['GET'])
+def download():
+    id = request.args.get('id')
+    global artifacts
+    zip = artifacts[id]
+    if zip:
+        return send_file(zip)
 
 if __name__ == "__main__":
     logging.basicConfig(
